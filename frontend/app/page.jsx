@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import Sidebar from "@/components/Sidebar";
+import Icon from "@/components/Icons";
 import * as api from "@/lib/api";
 import { INTENT_META } from "@/lib/types";
 
@@ -12,7 +13,9 @@ function StreamStatsLine({ stats, streaming }) {
 
   if (stats.chunks === 0) {
     return streaming ? (
-      <div className="stream-stats">⚡ waiting for first token…</div>
+      <div className="stream-stats">
+        <Icon name="zap" size={12} /> waiting for first token…
+      </div>
     ) : null;
   }
 
@@ -30,7 +33,8 @@ function StreamStatsLine({ stats, streaming }) {
 
   return (
     <div className="stream-stats">
-      ⚡ {stats.chunks} chunk{stats.chunks > 1 ? "s" : ""}
+      <Icon name="zap" size={12} /> {stats.chunks} chunk
+      {stats.chunks > 1 ? "s" : ""}
       {rate && <> · {rate}/s</>}
       {ttft && <> · first token {ttft}s</>}
       {elapsed && <> · {elapsed}s total</>}
@@ -227,7 +231,8 @@ export default function Home() {
       <main className="chat-area">
         <header className="chat-header">
           <span className="intent-badge">
-            {INTENT_META[intent].emoji} {INTENT_META[intent].label} mode
+            <Icon name={INTENT_META[intent].icon} size={13} />
+            {INTENT_META[intent].label} mode
           </span>
           <span className="session-title">
             {activeSession?.title ?? "New chat"}
@@ -240,9 +245,14 @@ export default function Home() {
               <div className="empty-hero">
                 <div className="big">What are we talking about today?</div>
                 <div>
-                  {backendDown
-                    ? "⚠️ Backend unreachable — start it with: uvicorn app.main:app (port 8000)"
-                    : "The interface adapts to the conversation. Try one of these:"}
+                  {backendDown ? (
+                    <>
+                      <Icon name="alert" size={14} /> Backend unreachable —
+                      start it with: uvicorn app.main:app (port 8000)
+                    </>
+                  ) : (
+                    "The interface adapts to the conversation. Try one of these:"
+                  )}
                 </div>
                 {!backendDown && (
                   <div className="modes">
@@ -250,19 +260,19 @@ export default function Home() {
                       className="mode-chip"
                       onClick={() => send("Write a Python function that merges two sorted lists")}
                     >
-                      💻 Debug some code
+                      <Icon name="code" size={14} /> Debug some code
                     </button>
                     <button
                       className="mode-chip"
                       onClick={() => send("Write a short poem about the sea at night")}
                     >
-                      🎨 Write a poem
+                      <Icon name="pen" size={14} /> Write a poem
                     </button>
                     <button
                       className="mode-chip"
                       onClick={() => send("Explain how photosynthesis works, step by step")}
                     >
-                      📚 Learn something
+                      <Icon name="book" size={14} /> Learn something
                     </button>
                   </div>
                 )}
@@ -275,7 +285,9 @@ export default function Home() {
                   {m.role === "assistant" ? (
                     <>
                       {m.error ? (
-                        <p>⚠️ {m.error}</p>
+                        <p>
+                          <Icon name="alert" size={14} /> {m.error}
+                        </p>
                       ) : (
                         <ReactMarkdown>{m.content}</ReactMarkdown>
                       )}
