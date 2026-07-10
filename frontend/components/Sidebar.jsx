@@ -1,18 +1,10 @@
 "use client";
 
-import { INTENT_META, Intent, Session } from "@/lib/types";
+import { INTENT_META } from "@/lib/types";
 
-interface Props {
-  sessions: Session[];
-  activeId: string | null;
-  onSelect: (id: string) => void;
-  onNew: () => void;
-  onDelete: (id: string) => void;
-}
+const GROUP_ORDER = ["code", "creative", "study", "general"];
 
-const GROUP_ORDER: Intent[] = ["code", "creative", "study", "general"];
-
-export default function Sidebar({ sessions, activeId, onSelect, onNew, onDelete }: Props) {
+export default function Sidebar({ sessions, activeId, onSelect, onNew, onDelete }) {
   const groups = GROUP_ORDER.map((intent) => ({
     intent,
     items: sessions.filter((s) => s.category === intent),

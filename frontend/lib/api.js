@@ -1,49 +1,30 @@
-import { Session } from "./types";
-
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-export async function listSessions(): Promise<Session[]> {
+export async function listSessions() {
   const res = await fetch(`${API_BASE}/api/sessions`);
   if (!res.ok) throw new Error("Failed to load sessions");
   return res.json();
 }
 
-export async function getMessages(sessionId: string) {
+export async function getMessages(sessionId) {
   const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/messages`);
   if (!res.ok) throw new Error("Failed to load messages");
-  return res.json() as Promise<
-    { id: number; role: "user" | "assistant"; content: string; intent: string | null }[]
-  >;
+  return res.json();
 }
 
-export async function deleteSession(sessionId: string) {
+export async function deleteSession(sessionId) {
   await fetch(`${API_BASE}/api/sessions/${sessionId}`, { method: "DELETE" });
-}
-
-export interface StreamCallbacks {
-  /** Raw hook for every SSE event — feeds the nerd-mode panel. */
-  onEvent?: (event: string, data: unknown) => void;
-  onMeta?: (meta: {
-    session_id: string;
-    intent: string;
-    title: string;
-    followups: string[];
-  }) => void;
-  onToken?: (token: string) => void;
-  onDone?: (data: { session_id: string; text: string }) => void;
-  onError?: (detail: string) => void;
 }
 
 /**
  * Calls the FastAPI SSE endpoint with POST and parses the event stream
- * manually (EventSource only supports GET).
+ * manually (the browser's EventSource only supports GET).
+ *
+ * Callbacks: onMeta({session_id, intent, title, followups}),
+ * onToken(text), onDone({session_id, text}), onError(detail).
  */
-export async function streamChat(
-  message: string,
-  sessionId: string | null,
-  cb: StreamCallbacks
-): Promise<void> {
+export async function streamChat(message, sessionId, cb) {
   const res = await fetch(`${API_BASE}/api/chat/stream`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -59,7 +40,7 @@ export async function streamChat(
   const decoder = new TextDecoder();
   let buffer = "";
 
-  const dispatch = (block: string) => {
+  const dispatch = (block) => {
     let event = "message";
     let dataRaw = "";
     for (const line of block.split("\n")) {
@@ -67,17 +48,16 @@ export async function streamChat(
       else if (line.startsWith("data: ")) dataRaw += line.slice(6);
     }
     if (!dataRaw) return;
-    let data: unknown;
+    let data;
     try {
       data = JSON.parse(dataRaw);
     } catch {
       return;
     }
-    cb.onEvent?.(event, data);
-    if (event === "meta") cb.onMeta?.(data as Parameters<NonNullable<StreamCallbacks["onMeta"]>>[0]);
-    else if (event === "token") cb.onToken?.((data as { t: string }).t);
-    else if (event === "done") cb.onDone?.(data as { session_id: string; text: string });
-    else if (event === "error") cb.onError?.((data as { detail: string }).detail);
+    if (event === "meta") cb.onMeta?.(data);
+    else if (event === "token") cb.onToken?.(data.t);
+    else if (event === "done") cb.onDone?.(data);
+    else if (event === "error") cb.onError?.(data.detail);
   };
 
   for (;;) {

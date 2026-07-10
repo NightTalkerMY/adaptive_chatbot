@@ -4,22 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import Sidebar from "@/components/Sidebar";
 import * as api from "@/lib/api";
-import {
-  ChatMessage,
-  INTENT_META,
-  Intent,
-  Session,
-  StreamStats,
-} from "@/lib/types";
+import { INTENT_META } from "@/lib/types";
 
 /** Live token-stream stats shown under an assistant reply while it streams. */
-function StreamStatsLine({
-  stats,
-  streaming,
-}: {
-  stats?: StreamStats;
-  streaming?: boolean;
-}) {
+function StreamStatsLine({ stats, streaming }) {
   if (!stats) return null;
 
   if (stats.chunks === 0) {
@@ -52,17 +40,17 @@ function StreamStatsLine({
 }
 
 export default function Home() {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [sessions, setSessions] = useState([]);
+  const [activeId, setActiveId] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [intent, setIntent] = useState<Intent>("general");
-  const [followups, setFollowups] = useState<string[]>([]);
+  const [intent, setIntent] = useState("general");
+  const [followups, setFollowups] = useState([]);
   const [backendDown, setBackendDown] = useState(false);
 
-  const messagesRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messagesRef = useRef(null);
+  const textareaRef = useRef(null);
 
   // The adaptive-theme hook: the classified intent morphs the whole UI.
   useEffect(() => {
@@ -89,7 +77,7 @@ export default function Home() {
     });
   }, [messages]);
 
-  const selectSession = async (id: string) => {
+  const selectSession = async (id) => {
     setActiveId(id);
     setFollowups([]);
     const msgs = await api.getMessages(id);
@@ -97,7 +85,7 @@ export default function Home() {
       msgs.map((m) => ({
         role: m.role,
         content: m.content,
-        intent: m.intent as Intent | null,
+        intent: m.intent,
       }))
     );
     const session = sessions.find((s) => s.id === id);
@@ -111,13 +99,13 @@ export default function Home() {
     setIntent("general");
   };
 
-  const removeSession = async (id: string) => {
+  const removeSession = async (id) => {
     await api.deleteSession(id);
     if (id === activeId) newChat();
     refreshSessions();
   };
 
-  const send = async (text: string) => {
+  const send = async (text) => {
     const trimmed = text.trim();
     if (!trimmed || isStreaming) return;
 
@@ -135,7 +123,7 @@ export default function Home() {
       },
     ]);
 
-    const appendToDraft = (updater: (m: ChatMessage) => ChatMessage) =>
+    const appendToDraft = (updater) =>
       setMessages((prev) => {
         const next = [...prev];
         next[next.length - 1] = updater(next[next.length - 1]);
@@ -151,7 +139,7 @@ export default function Home() {
     let doneReceived = false;
     let failed = false;
 
-    const finish = (timer: ReturnType<typeof setInterval>) => {
+    const finish = (timer) => {
       clearInterval(timer);
       appendToDraft((m) => ({ ...m, streaming: false }));
       setIsStreaming(false);
@@ -177,7 +165,7 @@ export default function Home() {
       }
     }, 24);
 
-    const fail = (detail: string) => {
+    const fail = (detail) => {
       failed = true;
       clearInterval(timer);
       appendToDraft((m) => ({
@@ -194,7 +182,7 @@ export default function Home() {
       await api.streamChat(trimmed, activeId, {
         onMeta: (meta) => {
           setActiveId(meta.session_id);
-          setIntent(meta.intent as Intent);
+          setIntent(meta.intent);
           setFollowups(meta.followups);
         },
         onToken: (t) => {
