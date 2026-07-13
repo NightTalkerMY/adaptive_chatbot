@@ -10,8 +10,7 @@ load_dotenv()
 # Model configuration
 GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME") or "gemini-3.1-flash-lite"
 
-# Up to 5 API keys, rotated on quota exhaustion (same pattern as the
-# ResilientClient from the previous project).
+# Up to 5 API keys, rotated when quota is exhausted.
 API_KEYS = [k for k in (os.getenv(f"GEMINI_API_KEY_{i}") for i in range(1, 6)) if k]
 
 # SQLite by default; overridable for tests / Postgres deployments.

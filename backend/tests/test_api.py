@@ -5,7 +5,7 @@ Quality-assurance strategy:
   injection via FastAPI's dependency_overrides) so tests are fast, free and
   reproducible — no network, no API keys.
 - Each test runs against a fresh SQLite schema (see conftest).
-- Covers: streaming contract (SSE event order + token-by-token delivery),
+- Covers: streaming contract (SSE event order + incremental chunk delivery),
   persistence, context/memory across turns, session categorisation,
   and error handling.
 """

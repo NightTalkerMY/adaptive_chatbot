@@ -1,9 +1,4 @@
-"""Resilient Gemini client with API-key rotation, streaming and intent classification.
-
-Adapted from the ResilientClient in the previous project (IBM_Bob_GroupWAX):
-same key-rotation strategy on quota errors, extended with token streaming and
-a structured-output classification call that powers the adaptive UI.
-"""
+"""Gemini client with key rotation, streaming, and intent classification."""
 
 import json
 import time
@@ -101,7 +96,7 @@ class ResilientGeminiClient:
         return contents
 
     def stream_chat(self, history, user_message):
-        """Yield response text chunks token-by-token, rotating keys on quota errors."""
+        """Yield response chunks incrementally, rotating keys on quota errors."""
         contents = self._to_contents(history, user_message)
         gen_config = types.GenerateContentConfig(
             system_instruction=SYSTEM_INSTRUCTION,

@@ -145,7 +145,7 @@ def chat_stream(req: ChatRequest, llm: ResilientGeminiClient = Depends(get_llm))
                 },
             )
 
-            # 4. Stream tokens from Gemini.
+            # 4. Stream response chunks from Gemini.
             full_text = ""
             try:
                 for chunk in llm.stream_chat(history, req.message):
