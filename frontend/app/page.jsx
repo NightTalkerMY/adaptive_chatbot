@@ -22,23 +22,17 @@ function StreamStatsLine({ stats, streaming }) {
   const ttft = stats.firstTokenAt
     ? ((stats.firstTokenAt - stats.sentAt) / 1000).toFixed(2)
     : null;
-  const span =
-    stats.firstTokenAt && stats.lastTokenAt
-      ? (stats.lastTokenAt - stats.firstTokenAt) / 1000
-      : 0;
-  const rate = span > 0 ? ((stats.chunks - 1) / span).toFixed(1) : null;
   const elapsed = stats.lastTokenAt
-    ? ((stats.lastTokenAt - stats.sentAt) / 1000).toFixed(1)
+    ? ((stats.lastTokenAt - stats.sentAt) / 1000).toFixed(2)
     : null;
 
   return (
     <div className="stream-stats">
-      <Icon name="zap" size={12} /> {stats.chunks} chunk
+      <Icon name="zap" size={12} /> {stats.chunks} response chunk
       {stats.chunks > 1 ? "s" : ""}
-      {rate && <> · {rate}/s</>}
-      {ttft && <> · first token {ttft}s</>}
-      {elapsed && <> · {elapsed}s total</>}
-      {streaming && <> · streaming…</>}
+      {ttft && <> · first chunk {ttft}s</>}
+      {elapsed && streaming && <> · {elapsed}s elapsed · streaming…</>}
+      {elapsed && !streaming && <> · stream completed {elapsed}s</>}
     </div>
   );
 }
