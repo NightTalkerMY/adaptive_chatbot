@@ -54,6 +54,115 @@
       .subtitle { max-width: 780px; margin-top: 28px; color: var(--muted); font-size: clamp(1.25rem, 2.3vw, 1.9rem); }
       .author { margin-top: auto; color: var(--muted); font-size: 1rem; }
 
+      .slide.active.title-slide {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
+        align-items: center;
+        gap: clamp(40px, 6vw, 96px);
+      }
+      .title-slide::after {
+        content: "";
+        position: absolute;
+        right: -10vw;
+        bottom: -28vh;
+        width: 58vw;
+        height: 58vw;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(79, 70, 229, 0.12), rgba(79, 70, 229, 0));
+        pointer-events: none;
+      }
+      .title-slide h1 { font-size: clamp(3.5rem, 6.4vw, 6.8rem); }
+      .title-slide .subtitle { max-width: 720px; }
+      .title-slide .author {
+        position: absolute;
+        left: clamp(42px, 6vw, 86px);
+        bottom: clamp(34px, 5vh, 64px);
+      }
+      .tech-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 32px; }
+      .tech-tag {
+        padding: 8px 13px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 750;
+      }
+      .hero-visual { position: relative; z-index: 1; }
+      .mock-window {
+        overflow: hidden;
+        border: 1px solid #d9def0;
+        border-radius: 22px;
+        background: #f8f9fc;
+        box-shadow: 0 28px 70px rgba(29, 35, 67, 0.16);
+        transform: rotate(1deg);
+      }
+      .mock-header {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 15px 18px;
+        border-bottom: 1px solid #e2e5ee;
+        background: #fff;
+      }
+      .mock-dot { width: 9px; height: 9px; border-radius: 50%; background: #d6dae4; }
+      .mock-title { margin-left: 8px; font-size: 0.78rem; font-weight: 800; }
+      .mock-body { padding: 22px; }
+      .mock-mode {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 22px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        background: #eaf8ee;
+        color: #16803c;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+      .mock-mode::before { content: "</>"; font-family: ui-monospace, monospace; }
+      .mock-user {
+        width: 78%;
+        margin-left: auto;
+        padding: 13px 15px;
+        border-radius: 14px 14px 4px 14px;
+        background: #1f2937;
+        color: white;
+        font-size: 0.82rem;
+        line-height: 1.4;
+      }
+      .mock-assistant {
+        margin-top: 14px;
+        padding: 16px;
+        border: 1px solid #e0e4ec;
+        border-radius: 4px 14px 14px 14px;
+        background: white;
+      }
+      .mock-line { height: 8px; margin-bottom: 9px; border-radius: 99px; background: #dfe4ec; }
+      .mock-line.accent { width: 42%; background: #96d5a7; }
+      .mock-line.medium { width: 76%; }
+      .mock-line.short { width: 58%; }
+      .mock-stream {
+        margin-top: 14px;
+        padding-top: 11px;
+        border-top: 1px dashed #dfe3eb;
+        color: var(--muted);
+        font-family: ui-monospace, monospace;
+        font-size: 0.67rem;
+      }
+      .mock-followups { display: flex; gap: 7px; margin-top: 15px; }
+      .mock-chip {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #dfe3eb;
+        border-radius: 999px;
+        background: white;
+        color: var(--accent);
+        text-align: center;
+        font-size: 0.63rem;
+        font-weight: 700;
+      }
+
       .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
       .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .card {
@@ -84,6 +193,85 @@
       }
       .node.primary { border-color: var(--accent); background: var(--accent-soft); }
       .arrow { color: var(--accent); font-size: 2rem; font-weight: 900; }
+      .architecture {
+        display: grid;
+        flex: 1;
+        grid-template-columns: 1fr 64px 1.15fr 64px 1.15fr;
+        grid-template-rows: max-content max-content;
+        align-items: center;
+        align-content: center;
+        column-gap: 18px;
+        row-gap: 18px;
+      }
+      .architecture .node {
+        width: 100%;
+        min-height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .architecture .browser { grid-column: 1; grid-row: 1; }
+      .architecture .browser-api { grid-column: 2; grid-row: 1; justify-self: center; }
+      .architecture .api { grid-column: 3; grid-row: 1; }
+      .architecture .api-gemini { grid-column: 4; grid-row: 1; justify-self: center; }
+      .architecture .gemini { grid-column: 5; grid-row: 1; }
+      .database-branch {
+        grid-column: 3;
+        grid-row: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      .database-branch .node { min-height: 120px; }
+      .connector {
+        position: relative;
+        flex: none;
+        background: var(--accent);
+      }
+      .connector.horizontal { width: 52px; height: 3px; }
+      .connector.vertical { width: 3px; height: 48px; }
+      .connector.horizontal::before,
+      .connector.horizontal::after,
+      .connector.vertical::before,
+      .connector.vertical::after {
+        content: "";
+        position: absolute;
+        width: 0;
+        height: 0;
+      }
+      .connector.horizontal::before {
+        left: -1px;
+        top: 50%;
+        border-top: 7px solid transparent;
+        border-bottom: 7px solid transparent;
+        border-right: 10px solid var(--accent);
+        transform: translateY(-50%);
+      }
+      .connector.horizontal::after {
+        right: -1px;
+        top: 50%;
+        border-top: 7px solid transparent;
+        border-bottom: 7px solid transparent;
+        border-left: 10px solid var(--accent);
+        transform: translateY(-50%);
+      }
+      .connector.vertical::before {
+        left: 50%;
+        top: -1px;
+        border-left: 7px solid transparent;
+        border-right: 7px solid transparent;
+        border-bottom: 10px solid var(--accent);
+        transform: translateX(-50%);
+      }
+      .connector.vertical::after {
+        left: 50%;
+        bottom: -1px;
+        border-left: 7px solid transparent;
+        border-right: 7px solid transparent;
+        border-top: 10px solid var(--accent);
+        transform: translateX(-50%);
+      }
       .caption { margin-top: 22px; text-align: center; color: var(--muted); font-size: 1.05rem; }
 
       .sequence { display: grid; gap: 13px; max-width: 900px; }
@@ -142,9 +330,16 @@
       }
 
       @media (max-width: 760px) {
+        .slide.active.title-slide { display: flex; flex-direction: column; align-items: stretch; }
+        .hero-visual { margin-top: 42px; }
+        .title-slide .author { position: static; margin-top: 36px; }
         .grid, .grid.three { grid-template-columns: 1fr; }
         .flow { flex-direction: column; }
         .arrow { transform: rotate(90deg); }
+        .architecture { display: flex; flex-direction: column; }
+        .architecture .connector.horizontal { transform: rotate(90deg); margin: 24px 0; }
+        .database-branch { display: contents; }
+        .database-branch .connector.vertical { margin: 10px 0; }
         .slide { overflow-y: auto; }
       }
 
@@ -157,11 +352,42 @@
   </head>
   <body>
     <main class="deck">
-      <section class="slide active">
-        <div class="eyebrow">AI Engineer Technical Task · Question 2</div>
-        <h1>Adaptive Chat</h1>
-        <p class="subtitle">A database-backed Gemini chat that streams through FastAPI and adapts its interface to the conversation.</p>
-        <div class="author">Yi Yang · Technical demo</div>
+      <section class="slide active title-slide">
+        <div class="title-copy">
+          <div class="eyebrow">AI Engineer Technical Task · Question 2</div>
+          <h1>Adaptive Chat</h1>
+          <p class="subtitle">A database-backed Gemini chat that streams through FastAPI and adapts its interface to the conversation.</p>
+          <div class="tech-tags">
+            <span class="tech-tag">FastAPI + SSE</span>
+            <span class="tech-tag">Next.js</span>
+            <span class="tech-tag">Gemini</span>
+            <span class="tech-tag">SQLite</span>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="mock-window">
+            <div class="mock-header">
+              <span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span>
+              <span class="mock-title">Adaptive Chat</span>
+            </div>
+            <div class="mock-body">
+              <div class="mock-mode">Code mode</div>
+              <div class="mock-user">Write a Python function that merges two sorted lists.</div>
+              <div class="mock-assistant">
+                <div class="mock-line accent"></div>
+                <div class="mock-line"></div>
+                <div class="mock-line medium"></div>
+                <div class="mock-line short"></div>
+                <div class="mock-stream">4 response chunks · first chunk 1.24s · stream completed 1.41s</div>
+              </div>
+              <div class="mock-followups">
+                <div class="mock-chip">Explain complexity</div>
+                <div class="mock-chip">Add test cases</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="author">Wong Yi Yang · Technical demo</div>
       </section>
 
       <section class="slide">
@@ -179,11 +405,16 @@
       <section class="slide">
         <div class="eyebrow">02 · Architecture</div>
         <h2>Small, explicit components</h2>
-        <div class="flow">
-          <div class="node">Next.js<br />browser UI</div><div class="arrow">→</div>
-          <div class="node primary">FastAPI<br />SSE endpoint</div><div class="arrow">→</div>
-          <div class="node">Gemini<br />streaming API</div>
-          <div class="arrow">↕</div><div class="node">SQLite<br />SQLAlchemy</div>
+        <div class="architecture">
+          <div class="node browser">Next.js<br />browser UI</div>
+          <div class="connector horizontal browser-api" aria-hidden="true"></div>
+          <div class="node primary api">FastAPI<br />SSE endpoint</div>
+          <div class="connector horizontal api-gemini" aria-hidden="true"></div>
+          <div class="node gemini">Gemini<br />streaming API</div>
+          <div class="database-branch">
+            <div class="connector vertical" aria-hidden="true"></div>
+            <div class="node">SQLite<br />SQLAlchemy</div>
+          </div>
         </div>
         <p class="caption">The browser sends one POST request; FastAPI forwards each provider response chunk immediately.</p>
       </section>
