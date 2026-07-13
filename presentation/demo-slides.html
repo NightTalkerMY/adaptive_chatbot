@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Adaptive Chat — Technical Demo</title>
+    <style>
+      :root {
+        --ink: #172033;
+        --muted: #667085;
+        --accent: #4f46e5;
+        --accent-soft: #eef2ff;
+        --green: #16803c;
+        --paper: #ffffff;
+        --line: #dfe3eb;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        overflow: hidden;
+        background: #e9edf4;
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      .deck { height: 100%; position: relative; }
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: none;
+        padding: clamp(42px, 6vw, 86px);
+        background: var(--paper);
+      }
+      .slide.active { display: flex; flex-direction: column; }
+
+      .eyebrow {
+        margin-bottom: 16px;
+        color: var(--accent);
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+      h1 { max-width: 900px; margin: 0; font-size: clamp(3rem, 7vw, 6.3rem); line-height: 0.98; }
+      h2 { margin: 0 0 34px; font-size: clamp(2.3rem, 5vw, 4.3rem); line-height: 1.04; }
+      h3 { margin: 0 0 10px; font-size: 1.25rem; }
+      p, li { font-size: clamp(1.08rem, 2vw, 1.6rem); line-height: 1.45; }
+      p { margin: 0; }
+      ul { margin: 0; padding-left: 1.2em; }
+      li + li { margin-top: 12px; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .subtitle { max-width: 780px; margin-top: 28px; color: var(--muted); font-size: clamp(1.25rem, 2.3vw, 1.9rem); }
+      .author { margin-top: auto; color: var(--muted); font-size: 1rem; }
+
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+      .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .card {
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: #fbfcfe;
+      }
+      .card p { color: var(--muted); font-size: clamp(0.95rem, 1.5vw, 1.25rem); }
+      .check { color: var(--green); font-weight: 800; }
+
+      .flow {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+      }
+      .node {
+        min-width: 150px;
+        padding: 24px 18px;
+        border: 2px solid var(--line);
+        border-radius: 18px;
+        text-align: center;
+        background: #fff;
+        font-size: clamp(1rem, 1.8vw, 1.35rem);
+        font-weight: 750;
+      }
+      .node.primary { border-color: var(--accent); background: var(--accent-soft); }
+      .arrow { color: var(--accent); font-size: 2rem; font-weight: 900; }
+      .caption { margin-top: 22px; text-align: center; color: var(--muted); font-size: 1.05rem; }
+
+      .sequence { display: grid; gap: 13px; max-width: 900px; }
+      .event {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 18px;
+        align-items: center;
+        padding: 16px 20px;
+        border-left: 5px solid var(--accent);
+        border-radius: 0 14px 14px 0;
+        background: var(--accent-soft);
+      }
+      .event code { color: var(--accent); font-size: 1.1rem; font-weight: 800; }
+      .event span { color: var(--muted); font-size: 1.05rem; }
+
+      .metric { font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 850; color: var(--accent); }
+      .metric-label { color: var(--muted); font-size: 1.05rem; }
+      .note {
+        margin-top: auto;
+        padding: 14px 18px;
+        border-radius: 12px;
+        background: #f7f8fa;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .controls {
+        position: fixed;
+        right: 18px;
+        bottom: 16px;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+      .controls button {
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: white;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .progress {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        z-index: 11;
+        height: 5px;
+        background: var(--accent);
+        transition: width 180ms ease;
+      }
+
+      @media (max-width: 760px) {
+        .grid, .grid.three { grid-template-columns: 1fr; }
+        .flow { flex-direction: column; }
+        .arrow { transform: rotate(90deg); }
+        .slide { overflow-y: auto; }
+      }
+
+      @media print {
+        body { overflow: visible; background: white; }
+        .slide { position: relative; display: flex; flex-direction: column; width: 13.333in; height: 7.5in; break-after: page; }
+        .controls, .progress { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck">
+      <section class="slide active">
+        <div class="eyebrow">AI Engineer Technical Task · Question 2</div>
+        <h1>Adaptive Chat</h1>
+        <p class="subtitle">A database-backed Gemini chat that streams through FastAPI and adapts its interface to the conversation.</p>
+        <div class="author">Yi Yang · Technical demo</div>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">01 · Objective</div>
+        <h2>What the task asked for</h2>
+        <div class="grid">
+          <div class="card"><h3><span class="check">✓</span> Streaming REST API</h3><p>One FastAPI POST endpoint returns incremental Server-Sent Events.</p></div>
+          <div class="card"><h3><span class="check">✓</span> Chat interface</h3><p>A responsive Next.js client consumes and renders the live stream.</p></div>
+          <div class="card"><h3><span class="check">✓</span> Conversation memory</h3><p>SQLite persists sessions and messages; history is replayed every turn.</p></div>
+          <div class="card"><h3><span class="check">✓</span> Quality assurance</h3><p>Deterministic tests cover streaming, persistence, memory, and failures.</p></div>
+        </div>
+        <div class="note">Bonus coverage: Docker Compose and a user-friendly adaptive interface.</div>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">02 · Architecture</div>
+        <h2>Small, explicit components</h2>
+        <div class="flow">
+          <div class="node">Next.js<br />browser UI</div><div class="arrow">→</div>
+          <div class="node primary">FastAPI<br />SSE endpoint</div><div class="arrow">→</div>
+          <div class="node">Gemini<br />streaming API</div>
+          <div class="arrow">↕</div><div class="node">SQLite<br />SQLAlchemy</div>
+        </div>
+        <p class="caption">The browser sends one POST request; FastAPI forwards each provider response chunk immediately.</p>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">03 · Streaming contract</div>
+        <h2>One request, incremental events</h2>
+        <div class="sequence">
+          <div class="event"><code>meta</code><span>Session ID, category, title, and suggested follow-ups</span></div>
+          <div class="event"><code>token *</code><span>One event for each text chunk received from Gemini</span></div>
+          <div class="event"><code>done</code><span>Session ID and the complete assembled assistant response</span></div>
+          <div class="event"><code>error</code><span>A safe failure event if classification, session lookup, or generation fails</span></div>
+        </div>
+        <div class="note">Technical nuance: Gemini controls internal token batching, so the API exposes incremental text chunks rather than guaranteed tokenizer boundaries.</div>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">04 · Memory</div>
+        <h2>Conversation state survives requests</h2>
+        <div class="grid">
+          <div class="card"><h3>1. Load</h3><p>Retrieve all earlier user and assistant messages for the session.</p></div>
+          <div class="card"><h3>2. Generate</h3><p>Send structured history plus the latest question to Gemini.</p></div>
+          <div class="card"><h3>3. Stream</h3><p>Forward the response incrementally without waiting for completion.</p></div>
+          <div class="card"><h3>4. Persist</h3><p>Save both sides of the exchange for the next turn.</p></div>
+        </div>
+        <div class="note">Demo proof: ask a follow-up containing “it” and show that Gemini understands the earlier subject.</div>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">05 · User experience</div>
+        <h2>The interface reads the room</h2>
+        <div class="grid three">
+          <div class="card"><h3>Adaptive modes</h3><p>Code, creative, study, and general themes respond to conversation intent.</p></div>
+          <div class="card"><h3>Automatic organization</h3><p>Sessions receive generated titles and stable majority-vote categories.</p></div>
+          <div class="card"><h3>Visible streaming</h3><p>Live chunks, first-chunk latency, completion time, and suggested follow-ups.</p></div>
+        </div>
+        <div class="note">Classification is a separate lightweight Gemini call; failure falls back to the general mode and never blocks chat generation.</div>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">06 · Testing methodology</div>
+        <h2>Deterministic at the LLM boundary</h2>
+        <div class="grid three">
+          <div class="card"><div class="metric">19</div><div class="metric-label">passing backend tests</div></div>
+          <div class="card"><div class="metric">0</div><div class="metric-label">network calls during tests</div></div>
+          <div class="card"><div class="metric">4</div><div class="metric-label">fixed fake response chunks</div></div>
+        </div>
+        <ul style="margin-top: 30px">
+          <li>Real FastAPI routes, validation, SSE formatting, and database logic</li>
+          <li>Fake Gemini client with predictable classification and streamed chunks</li>
+          <li>Fresh SQLite schema for each test to prevent state leakage</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">07 · Live demo</div>
+        <h2>Four things to prove</h2>
+        <div class="grid">
+          <div class="card"><h3>1 · Stream</h3><p>Send a coding question and watch the response arrive incrementally.</p></div>
+          <div class="card"><h3>2 · Adapt</h3><p>Show the theme, generated title, category, and follow-up suggestions.</p></div>
+          <div class="card"><h3>3 · Remember</h3><p>Ask a contextual follow-up and confirm earlier messages are understood.</p></div>
+          <div class="card"><h3>4 · Verify</h3><p>Refresh the page, reload history, then run the 19-test suite.</p></div>
+        </div>
+        <div class="note">Closing point: the solution meets every required Q2 item and adds both optional Docker and interface enhancements.</div>
+      </section>
+    </main>
+
+    <div class="controls">
+      <span id="counter">1 / 8</span>
+      <button id="previous" aria-label="Previous slide">←</button>
+      <button id="next" aria-label="Next slide">→</button>
+    </div>
+    <div class="progress" id="progress"></div>
+
+    <script>
+      const slides = [...document.querySelectorAll(".slide")];
+      const counter = document.querySelector("#counter");
+      const progress = document.querySelector("#progress");
+      let current = 0;
+
+      function show(index) {
+        current = Math.max(0, Math.min(slides.length - 1, index));
+        slides.forEach((slide, i) => slide.classList.toggle("active", i === current));
+        counter.textContent = `${current + 1} / ${slides.length}`;
+        progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+        history.replaceState(null, "", `#${current + 1}`);
+      }
+
+      document.querySelector("#previous").addEventListener("click", () => show(current - 1));
+      document.querySelector("#next").addEventListener("click", () => show(current + 1));
+      document.addEventListener("keydown", (event) => {
+        if (["ArrowRight", " ", "PageDown"].includes(event.key)) show(current + 1);
+        if (["ArrowLeft", "PageUp"].includes(event.key)) show(current - 1);
+        if (event.key === "Home") show(0);
+        if (event.key === "End") show(slides.length - 1);
+      });
+
+      const initial = Number(location.hash.slice(1)) - 1;
+      show(Number.isInteger(initial) ? initial : 0);
+    </script>
+  </body>
+</html>
