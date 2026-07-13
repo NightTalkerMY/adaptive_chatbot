@@ -25,25 +25,23 @@ app.add_middleware(
 
 @lru_cache
 def get_llm() -> ResilientGeminiClient:
+    """Return the shared Gemini client used across requests."""
     return ResilientGeminiClient(config.API_KEYS, config.GEMINI_MODEL_NAME)
 
 
 @app.on_event("startup")
 def on_startup():
+    """Create the database tables when the application starts."""
     init_db()
 
 
 def sse_event(event: str, data: dict) -> str:
+    """Format a named event and JSON payload as an SSE message."""
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
 def stable_category(intents: list) -> str:
-    """Session category = majority vote over per-message intents.
-
-    A single off-topic message can't flip an established session, but a
-    genuine topic change wins as soon as it ties the old majority because
-    ties break in favour of the most recent intent.
-    """
+    """Choose the majority intent, breaking ties by most recent use."""
     if not intents:
         return "general"
     counts = Counter(intents)
@@ -53,11 +51,13 @@ def stable_category(intents: list) -> str:
 
 @app.get("/api/health")
 def health():
+    """Report API availability and the configured Gemini model."""
     return {"status": "ok", "model": config.GEMINI_MODEL_NAME}
 
 
 @app.get("/api/sessions", response_model=list[SessionOut])
 def list_sessions(database: Session = Depends(get_db)):
+    """Return all chat sessions, newest activity first."""
     return (
         database.query(ChatSession).order_by(ChatSession.updated_at.desc()).all()
     )
@@ -65,6 +65,7 @@ def list_sessions(database: Session = Depends(get_db)):
 
 @app.get("/api/sessions/{session_id}/messages", response_model=list[MessageOut])
 def get_messages(session_id: str, database: Session = Depends(get_db)):
+    """Return the complete message history for one chat session."""
     session = database.get(ChatSession, session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -73,6 +74,7 @@ def get_messages(session_id: str, database: Session = Depends(get_db)):
 
 @app.delete("/api/sessions/{session_id}", status_code=204)
 def delete_session(session_id: str, database: Session = Depends(get_db)):
+    """Delete a chat session and its related messages."""
     session = database.get(ChatSession, session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -82,15 +84,10 @@ def delete_session(session_id: str, database: Session = Depends(get_db)):
 
 @app.post("/api/chat/stream")
 def chat_stream(req: ChatRequest, llm: ResilientGeminiClient = Depends(get_llm)):
-    """The core REST endpoint: streams the LLM response token-by-token via SSE.
-
-    Event sequence:
-      1. `meta`  — session id, classified intent, auto title, follow-up suggestions
-      2. `token` — one event per streamed chunk from Gemini
-      3. `done`  — final full text (or `error` if generation failed)
-    """
+    """Stream an incremental Gemini response to the client using SSE."""
 
     def event_generator():
+        """Run the streaming workflow while owning its database session."""
         # The DB session is managed inside the generator because the response
         # outlives the request handler while streaming.
         database = db.SessionLocal()

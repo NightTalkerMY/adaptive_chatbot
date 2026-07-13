@@ -67,10 +67,10 @@ def init_db():
     Base.metadata.create_all(engine)
 
 
-# 
+# Provide a database session per request and always close it afterward.
 def get_db():
     db = SessionLocal()
     try:
-        yield db   # test this database that may raise exception
+        yield db
     finally:
-        db.close() # finally close it for safely
+        db.close()
