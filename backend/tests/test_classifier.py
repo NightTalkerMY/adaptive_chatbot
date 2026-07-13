@@ -36,7 +36,8 @@ def test_unknown_intent_falls_back_to_general():
 
 
 def test_non_dict_json_falls_back():
-    assert parse_classification("[1, 2, 3]")["intent"] == "general"
+    raw = "[1, 2, 3]"
+    assert parse_classification(raw)["intent"] == "general"
 
 
 def test_followups_filtered_and_capped():
